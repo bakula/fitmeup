@@ -1,12 +1,9 @@
 import { useState, useCallback } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
 import { initializeApp } from 'firebase/app';
 import { getFirestore,collection , getDocs } from 'firebase/firestore/lite';
 
 function App() {
-  const [count, setCount] = useState(0)
   const [groups,setGrups] = useState<{id:string}[]>([])
   const firebaseConfig = {
     apiKey: "AIzaSyDOnz6kVAnsfXVq1wxlzuy-txEnolLWJuc",
