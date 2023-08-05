@@ -1,9 +1,5 @@
-
 import './App.css'
-import Button from 'react-bootstrap/Button';
-import Form from 'react-bootstrap/Form'
-import Card from 'react-bootstrap/Card';
-import Spinner from 'react-bootstrap/Spinner';
+import { Container,Button, Form,Card,Spinner,Navbar,Offcanvas,NavDropdown,Nav } from 'react-bootstrap';
 import { Link, Route } from "wouter";
 import AddWorkout from './Components/AddWorkout';
 import WorkoutHistory from './Components/WorkoutHistory';
@@ -27,8 +23,10 @@ const firebaseConfig = {
 const firebaseApp = initializeApp(firebaseConfig);
 export const auth = getAuth(firebaseApp);
 export const db = getFirestore(firebaseApp);
-const APP_PREFIX = `fit-me-up-`;
+export const APP_PREFIX = `fit-me-up-`;
 export const REGISTER_EMAIL_KEY = `${APP_PREFIX}register-email`
+export const WORKOUT_USER_ID = `${APP_PREFIX}workout-user-id`
+export const WORKOUT_GYM_ID = `${APP_PREFIX}workout-gym-id`
 function App() {
 
   
@@ -39,27 +37,46 @@ function App() {
   const [email, setEmail] = useState(localStorage.getItem(REGISTER_EMAIL_KEY)||"");
   const url = import.meta.env.MODE === "development" ?"http://localhost:5173/register":"https://fitmeup-f489e.web.app/register"
   console.log(user)
+  const expand = "sm";
    return (!loading && !error && user ? 
     <>
       <Route path='/register' component={Register}></Route>
-      <h1>FitMeUp</h1>
-      <h2>{user.displayName} {user.email} </h2>
-      <Card>
-        <Link href='/add'>
-          <Button>Add workout</Button>
-        </Link>
 
-        
-      </Card> 
-      <Card>
-        <Link href='/history'>
-          <Button>Workout history</Button>
-        </Link>
-
-        
-      </Card>       
-      <Route path='/add' component={AddWorkout}></Route>
+<Container fluid>
+      <Navbar key={expand} expand={expand} bg="primary" data-bs-theme="dark" sticky="top">
+          <Container fluid>
+            <Navbar.Brand href="#">FitMeUp</Navbar.Brand>
+            <Navbar.Toggle aria-controls={`offcanvasNavbar-expand-${expand}`} />
+            <Navbar.Offcanvas
+              id={`offcanvasNavbar-expand-${expand}`}
+              aria-labelledby={`offcanvasNavbarLabel-expand-${expand}`}
+              placement="end"
+            >
+              <Offcanvas.Header closeButton>
+                <Offcanvas.Title id={`offcanvasNavbarLabel-expand-${expand}`}>
+                  Offcanvas
+                </Offcanvas.Title>
+              </Offcanvas.Header>
+              <Offcanvas.Body>
+                <Nav className="justify-content-end flex-grow-1 pe-3">
+                  <Nav.Link href="/">Home</Nav.Link>
+                  <Nav.Link href="/add">Add workout</Nav.Link>
+                  <Nav.Link href="/history">Workout history</Nav.Link>
+                  <NavDropdown
+                    title="Config"
+                    id={`config-dopdown`}
+                  >
+                    <NavDropdown.Item href="/machines">Workout machines</NavDropdown.Item>
+                  </NavDropdown>
+                </Nav>
+              </Offcanvas.Body>
+            </Navbar.Offcanvas>
+          </Container>
+        </Navbar> 
+        <Route path='/add' component={AddWorkout}></Route>
       <Route path='/history' component={WorkoutHistory}></Route>
+        </Container>      
+
     </> :
     <>
     <Route path='/register' component={Register}></Route>

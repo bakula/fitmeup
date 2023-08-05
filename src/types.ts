@@ -1,8 +1,14 @@
 export type WorkoutType ={
     date:Date,
-    machine:string, 
+    ownerId:string,
+    excercises:WorkoutExcercise[],
     user:string,
+    
+}
+export type WorkoutExcercise = {
+    machine:string,
     sets:WorkoutSetType[]
+    index:number 
 }
 export type WorkoutSetType ={
     index:number,
@@ -20,3 +26,24 @@ export type UserType = {
     height:number,
     birthDate: Date
 }
+
+export type WorkoutMachineType = {
+    name:string
+    number:number
+    gym:any
+    adjustments?:MachineAdjustmentType[]
+}
+
+export type MachineAdjustmentType = {
+    name:string
+    values:AdjustmentValueLinearScale|AdjustmentValueList
+}
+export type AdjustmentValueLinearScale = {
+    min:number
+    max:number
+    step:number
+}
+export type AdjustmentValueList = {
+    value:number
+    unit:"kilogram"|"lb"
+}[]
