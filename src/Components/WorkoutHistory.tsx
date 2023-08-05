@@ -3,6 +3,6 @@ function WorkoutHistory() {
     <div>
       <h1>Workout history</h1>
     </div>
-  );
+  )
 }
-export default WorkoutHistory;
+export default WorkoutHistory

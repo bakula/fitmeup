@@ -1,14 +1,13 @@
-import { useSignInWithEmailLink } from "react-firebase-hooks/auth";
-import { REGISTER_EMAIL_KEY } from "../App";
-import Alert from "react-bootstrap/Alert";
-import Spinner from "react-bootstrap/esm/Spinner";
-import { auth } from "./Firestore";
+import { useSignInWithEmailLink } from 'react-firebase-hooks/auth'
+import { REGISTER_EMAIL_KEY } from '../App'
+import Alert from 'react-bootstrap/Alert'
+import Spinner from 'react-bootstrap/esm/Spinner'
+import { auth } from './Firestore'
 function Register() {
-  const [signInWithEmailLink, user, loading, error] =
-    useSignInWithEmailLink(auth);
-  console.log("register", user, loading, error);
-  const email = localStorage.getItem(REGISTER_EMAIL_KEY);
-  email && !user && !loading && !error && signInWithEmailLink(email);
+  const [signInWithEmailLink, user, loading, error] = useSignInWithEmailLink(auth)
+  console.log('register', user, loading, error)
+  const email = localStorage.getItem(REGISTER_EMAIL_KEY)
+  email && !user && !loading && !error && signInWithEmailLink(email)
   return (
     <div>
       <h1>Register</h1>
@@ -20,6 +19,6 @@ function Register() {
       )}
       {error && <Alert variant="danger">{error.message}</Alert>}
     </div>
-  );
+  )
 }
-export default Register;
+export default Register
