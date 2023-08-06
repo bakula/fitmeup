@@ -23,7 +23,13 @@ import { useSessionStorage } from 'usehooks-ts'
 import { WORKOUT_GYM_ID, WORKOUT_MACHINE_ID } from '../App'
 import { Field, Form, Formik, FormikHelpers, FieldProps, FieldArray, ArrayHelpers } from 'formik'
 import { useCallback, useState } from 'react'
-import { AdjustmentValue, DocumentWithData, MachineAdjustmentType, WorkoutMachineType } from '../types'
+import {
+  AdjustmentElement,
+  AdjustmentValue,
+  DocumentWithData,
+  MachineAdjustmentType,
+  WorkoutMachineType,
+} from '../types'
 function EditWorkoutDetails({ id, cancel }: { id: string; cancel: () => void }) {
   const [doc, loading, error] = useDocument(docs.workoutMachine(id))
   const saveDoc = useCallback(async (values: any) => {
@@ -113,6 +119,30 @@ function ValuesConfig({ adjIndex, values }: { adjIndex: number; values: Adjustme
     </FieldArray>
   )
 }
+function ElementsConfig({ adjIndex, elements }: { adjIndex: number; elements: AdjustmentElement[] }) {
+  return (
+    <FieldArray name={`adjustments.${adjIndex}.elements`}>
+      {(valuesHelpers: ArrayHelpers<AdjustmentValue[]>) => (
+        <>
+          {elements.map((element, elementIndex) => (
+            <Stack direction={'horizontal'} gap={3}>
+              <FormLabel>element name</FormLabel>
+              <Field name={`adjustments.${adjIndex}.elements.${elementIndex}.name`}>
+                {({ field }: FieldProps) => <FormControl type="text" placeholder="name" {...field} />}
+              </Field>
+              <Button size="sm" variant="danger" onClick={() => valuesHelpers.remove(elementIndex)}>
+                Remove element
+              </Button>
+            </Stack>
+          ))}
+          <Button size="sm" onClick={() => valuesHelpers.push({ name: '' })}>
+            Add element
+          </Button>
+        </>
+      )}
+    </FieldArray>
+  )
+}
 function WorkoutAdjustments({ values }: { values: WorkoutMachineType }) {
   return (
     <Card bg={'light'} className="m-3">
@@ -147,6 +177,7 @@ function WorkoutAdjustments({ values }: { values: WorkoutMachineType }) {
                         <td>
                           {adj.scale && <ScaleConfig index={adjIndex} />}
                           {adj.values && <ValuesConfig adjIndex={adjIndex} values={adj.values} />}
+                          {adj.elements && <ElementsConfig adjIndex={adjIndex} elements={adj.elements} />}
                         </td>
                       </tr>
                     ))}
@@ -159,6 +190,9 @@ function WorkoutAdjustments({ values }: { values: WorkoutMachineType }) {
                 </Button>
                 <Button size="sm" onClick={() => helpers.push({ name: '', values: [] })}>
                   Add values adjustments
+                </Button>
+                <Button size="sm" onClick={() => helpers.push({ name: '', elements: [] })}>
+                  Add elements adjustments
                 </Button>
               </Stack>
             </FormGroup>

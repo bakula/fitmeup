@@ -38,10 +38,17 @@ export type ScaleOrValues =
   | {
       scale: AdjustmentValueLinearScale
       values: never
+      elements: never
     }
   | {
       scale: never
       values: AdjustmentValue[]
+      elements: never
+    }
+  | {
+      scale: never
+      values: never
+      elements: AdjustmentElement[]
     }
 export type MachineAdjustmentType = {
   name: string
@@ -54,6 +61,9 @@ export type AdjustmentValueLinearScale = {
 export type AdjustmentValue = {
   value: number
   unit: 'kilogram' | 'lb'
+}
+export type AdjustmentElement = {
+  name: string
 }
 
 export type DocumentWithData<T> = {
