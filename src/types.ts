@@ -34,16 +34,18 @@ export type WorkoutMachineType = {
   adjustments?: MachineAdjustmentType[]
 }
 
-export type MachineAdjustmentType = {
-  name: string
-} & (
+export type ScaleOrValues =
   | {
       scale: AdjustmentValueLinearScale
+      values: never
     }
   | {
+      scale: never
       values: AdjustmentValue[]
     }
-)
+export type MachineAdjustmentType = {
+  name: string
+} & ScaleOrValues
 export type AdjustmentValueLinearScale = {
   min: number
   max: number
@@ -52,4 +54,9 @@ export type AdjustmentValueLinearScale = {
 export type AdjustmentValue = {
   value: number
   unit: 'kilogram' | 'lb'
+}
+
+export type DocumentWithData<T> = {
+  id: string
+  data: T
 }
