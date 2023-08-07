@@ -1,6 +1,7 @@
 export type WorkoutType = {
-  date: Date
-  ownerId: string
+  date: string
+  gym: string
+  ownerId?: string
   excercises: WorkoutExcercise[]
   user: string
 }
@@ -10,6 +11,7 @@ export type WorkoutExcercise = {
   index: number
 }
 export type WorkoutSetType = {
+  adjustments: Record<string, { value: number | string; name: string }>
   index: number
   kilograms: number
   reps: number
@@ -24,6 +26,7 @@ export type UserType = {
   weight: number
   height: number
   birthDate: Date
+  adjustments: Record<string, { value: number }>
 }
 
 export type WorkoutMachineType = {
@@ -51,6 +54,7 @@ export type ScaleOrValues =
       elements: AdjustmentElement[]
     }
 export type MachineAdjustmentType = {
+  uuid: string
   name: string
 } & ScaleOrValues
 export type AdjustmentValueLinearScale = {
@@ -59,8 +63,7 @@ export type AdjustmentValueLinearScale = {
   step: number
 }
 export type AdjustmentValue = {
-  value: number
-  unit: 'kilogram' | 'lb'
+  kg: number
 }
 export type AdjustmentElement = {
   name: string

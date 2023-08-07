@@ -30,6 +30,7 @@ import {
   MachineAdjustmentType,
   WorkoutMachineType,
 } from '../types'
+import { v4 as uuidv4 } from 'uuid'
 function EditWorkoutDetails({ id, cancel }: { id: string; cancel: () => void }) {
   const [doc, loading, error] = useDocument(docs.workoutMachine(id))
   const saveDoc = useCallback(async (values: any) => {
@@ -87,31 +88,15 @@ function ValuesConfig({ adjIndex, values }: { adjIndex: number; values: Adjustme
           {values.map((value, valueIndex) => (
             <Stack direction={'horizontal'} gap={3}>
               <FormLabel>value</FormLabel>
-              <Field name={`adjustments.${adjIndex}.values.${valueIndex}.value`}>
-                {({ field }: FieldProps) => <FormControl type="number" placeholder="value" {...field} />}
-              </Field>
-              <Field name={`adjustments.${adjIndex}.values.${valueIndex}.unit`} value={'kilogram'} type={'radio'}>
-                {({ field }: FieldProps) => (
-                  <>
-                    <FormLabel>kg</FormLabel>
-                    <FormCheck type="radio" placeholder="value" {...field} inline />
-                  </>
-                )}
-              </Field>
-              <Field name={`adjustments.${adjIndex}.values.${valueIndex}.unit`} value={'lb'} type={'radio'}>
-                {({ field }: FieldProps) => (
-                  <FormLabel>
-                    lb
-                    <FormCheck type="radio" placeholder="value" {...field} inline />
-                  </FormLabel>
-                )}
+              <Field name={`adjustments.${adjIndex}.values.${valueIndex}.kg`}>
+                {({ field }: FieldProps) => <FormControl type="number" placeholder="kg" {...field} />}
               </Field>
               <Button size="sm" variant="danger" onClick={() => valuesHelpers.remove(valueIndex)}>
                 Remove value
               </Button>
             </Stack>
           ))}
-          <Button size="sm" onClick={() => valuesHelpers.push({ value: 0, unit: 'kilogram' })}>
+          <Button size="sm" onClick={() => valuesHelpers.push({ kg: 0 })}>
             Add value
           </Button>
         </>
@@ -185,13 +170,16 @@ function WorkoutAdjustments({ values }: { values: WorkoutMachineType }) {
                 </Table>
               )}
               <Stack direction="horizontal" gap={3}>
-                <Button size="sm" onClick={() => helpers.push({ name: '', scale: { min: 1, max: 10, step: 1 } })}>
+                <Button
+                  size="sm"
+                  onClick={() => helpers.push({ uuid: uuidv4(), name: '', scale: { min: 1, max: 10, step: 1 } })}
+                >
                   Add scale adjustments
                 </Button>
-                <Button size="sm" onClick={() => helpers.push({ name: '', values: [] })}>
+                <Button size="sm" onClick={() => helpers.push({ uuid: uuidv4(), name: '', values: [] })}>
                   Add values adjustments
                 </Button>
-                <Button size="sm" onClick={() => helpers.push({ name: '', elements: [] })}>
+                <Button size="sm" onClick={() => helpers.push({ uuid: uuidv4(), name: '', elements: [] })}>
                   Add elements adjustments
                 </Button>
               </Stack>

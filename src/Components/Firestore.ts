@@ -39,9 +39,12 @@ export const collections = {
 } as const
 
 export const docs = {
+  user: (id: string) => doc(firesoreDb, dataBases.users, id),
   workout: (id: string) => doc(firesoreDb, dataBases.workouts, id),
   workoutMachine: (id: string) => doc(firesoreDb, dataBases.workoutMachines, id),
 }
 
-export const queryCurrentUser = (collection: any) =>
-  query<DocumentData, DocumentData>(collection, where('ownerId', '==', auth.currentUser?.uid))
+export const queryCurrentUser = (collection: any, ...aditionalRules: any) => {
+  const rules = [where('ownerId', '==', auth.currentUser?.uid), ...aditionalRules]
+  return query<DocumentData, DocumentData>(collection, ...rules)
+}
