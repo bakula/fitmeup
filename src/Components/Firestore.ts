@@ -26,6 +26,7 @@ export const auth = getAuth(firebaseApp)
 export const firesoreDb = getFirestore(firebaseApp)
 const dataBases = {
   gyms: 'gyms',
+  muscleGroups: 'muscleGroups',
   workoutMachines: 'workoutMachines',
   workouts: 'workouts',
   users: 'users',
@@ -33,6 +34,7 @@ const dataBases = {
 
 export const collections = {
   gyms: collection(firesoreDb, dataBases.gyms),
+  muscleGroups: collection(firesoreDb, dataBases.muscleGroups),
   workoutMachines: collection(firesoreDb, dataBases.workoutMachines),
   workouts: collection(firesoreDb, dataBases.workouts),
   users: collection(firesoreDb, dataBases.users),

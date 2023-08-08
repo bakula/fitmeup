@@ -6,12 +6,14 @@ export type WorkoutType = {
   user: string
 }
 export type WorkoutExcercise = {
+  muscleGroups: Record<string, { percentage: number }>
   machine: string
   sets: WorkoutSetType[]
   index: number
 }
+export type AdjustmentMap = Record<string, { value: number | string; name: string }>
 export type WorkoutSetType = {
-  adjustments: Record<string, { value: number | string; name: string }>
+  adjustments: AdjustmentMap
   index: number
   kilograms: number
   reps: number
@@ -35,8 +37,9 @@ export type WorkoutMachineType = {
   description?: string
   gym: any
   adjustments?: MachineAdjustmentType[]
+  muscleGroupsAffected: MuscleGroupsAffectedMap
 }
-
+export type MuscleGroupsAffectedMap = Record<string, { percentage: number; adjustments: AdjustmentMap }>
 export type ScaleOrValues =
   | {
       scale: AdjustmentValueLinearScale
@@ -68,8 +71,11 @@ export type AdjustmentValue = {
 export type AdjustmentElement = {
   name: string
 }
-
+export type MuscleGroup = {
+  name: string
+  relaxBreak?: Record<'low' | 'mid' | 'high', number>
+}
 export type DocumentWithData<T> = {
   id: string
-  data: T
+  data: () => T
 }

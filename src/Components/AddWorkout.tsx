@@ -158,16 +158,27 @@ function AddWorkout() {
   const [workout, workoutLoading, workoutError] = useDocument(docs.workout(getWorkoutId()))
   const [gyms, gymsLoading, gymsError] = useCollection(collections.gyms)
   const [users, usersLoading, usersError] = useCollection(queryCurrentUser(collections.users), COLLECTION_CONFIG)
-  const [workouts, workoutsLoading, workoutsError] = useCollection(
-    queryCurrentUser(collections.workouts),
+  const [muscleGroups, muscleGroupsLoading, muscleGroupsError] = useCollection(
+    query(collections.muscleGroups, orderBy('name', 'asc')),
     COLLECTION_CONFIG
   )
+  console.log('muscleGroups', muscleGroups, muscleGroupsError)
+  const [workouts, workoutsLoading, workoutsError] = useCollection(
+    queryCurrentUser(
+      collections.workouts,
+      where('gym', '==', gymId),
+      where('user', '==', userId),
+      orderBy('date', 'desc')
+    ),
+    COLLECTION_CONFIG
+  )
+  console.log('workoiuts config', gymId, userId)
   const [workoutMachines, workoutMachinesLoading, workoutMachinesError] = useCollection(
     query(collections.workoutMachines, orderBy('number', 'asc'), where('gym', '==', gymId)),
     COLLECTION_CONFIG
   )
   console.log('workout', workout, workoutLoading, workoutError)
-  console.log('workouts', workouts?.docs)
+  console.log('workouts', workouts?.docs, workoutsLoading, workoutsError)
   console.log('gyms', gyms, gymsError)
   console.log('workoutMachines', workoutMachines, workoutMachinesError)
   const addNewWorkout: () => void = async () => {
@@ -209,7 +220,24 @@ function AddWorkout() {
   return (
     <div>
       <h1>Add workout</h1>
-
+      <table>
+        <thead>
+          <tr>
+            <th>date</th>
+            <th>data</th>
+          </tr>
+        </thead>
+        {workouts && (
+          <tbody>
+            {workouts.docs.map((workoutDoc) => (
+              <tr>
+                <td>{workoutDoc.data().date}</td>
+                <td>{workoutDoc.data().excercises.map((ex) => ex.machine)}</td>
+              </tr>
+            ))}
+          </tbody>
+        )}
+      </table>
       <Formik<WorkoutType>
         initialValues={{ user: userId, gym: gymId, date, excercises: [], ownerId: auth?.currentUser?.uid }}
         onSubmit={async (values, { setSubmitting, resetForm }) => {
@@ -281,7 +309,12 @@ function AddWorkout() {
               {(excercisesHelpers: ArrayHelpers<WorkoutExcercise[]>) => (
                 <>
                   <Card>
-                    <Card.Header>Excercises:</Card.Header>
+                    <Card.Header>
+                      Excercises:
+                      <Stack direction={'horizontal'} gap={3}>
+                        {muscleGroups?.docs.map((group) => <FormCheck type="switch" label={group.data().name} />)}
+                      </Stack>
+                    </Card.Header>
                     <Card.Body>
                       <Row>
                         {values.excercises.map((excercise, excerciseIndex) => (

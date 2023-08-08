@@ -1,4 +1,14 @@
-import { query, where, setDoc, doc, addDoc, orderBy, deleteDoc } from 'firebase/firestore'
+import {
+  query,
+  where,
+  setDoc,
+  doc,
+  addDoc,
+  orderBy,
+  deleteDoc,
+  QueryDocumentSnapshot,
+  DocumentData,
+} from 'firebase/firestore'
 import { useCollection, useDocument } from 'react-firebase-hooks/firestore'
 import { COLLECTION_CONFIG, USE_COLLECTION, collections, docs } from './Firestore'
 import {
@@ -21,16 +31,20 @@ import {
 } from 'react-bootstrap'
 import { useSessionStorage } from 'usehooks-ts'
 import { WORKOUT_GYM_ID, WORKOUT_MACHINE_ID } from '../App'
-import { Field, Form, Formik, FormikHelpers, FieldProps, FieldArray, ArrayHelpers } from 'formik'
-import { useCallback, useState } from 'react'
+import { Field, Form, Formik, FormikHelpers, FieldProps, FieldArray, ArrayHelpers, useField } from 'formik'
+import { Reducer, useCallback, useEffect, useReducer, useState } from 'react'
 import {
   AdjustmentElement,
+  AdjustmentMap,
   AdjustmentValue,
   DocumentWithData,
   MachineAdjustmentType,
+  MuscleGroup,
+  MuscleGroupsAffectedMap,
   WorkoutMachineType,
 } from '../types'
 import { v4 as uuidv4 } from 'uuid'
+import FormRange from 'react-bootstrap/esm/FormRange'
 function EditWorkoutDetails({ id, cancel }: { id: string; cancel: () => void }) {
   const [doc, loading, error] = useDocument(docs.workoutMachine(id))
   const saveDoc = useCallback(async (values: any) => {
@@ -190,6 +204,65 @@ function WorkoutAdjustments({ values }: { values: WorkoutMachineType }) {
     </Card>
   )
 }
+type MusceGroupAffectedFieldState = {
+  checked: boolean
+  percentage: number
+  adjustments: AdjustmentMap
+}
+type MusceGroupAffectedFieldActions =
+  | { type: 'checkChange'; payload: boolean }
+  | { type: 'percentageChange'; payload: number }
+function MusceGroupAffectedField({
+  group,
+  muscleGroupsAffected,
+}: {
+  group: QueryDocumentSnapshot<DocumentData, DocumentData>
+  muscleGroupsAffected?: MuscleGroupsAffectedMap
+}) {
+  function reducer(state: MusceGroupAffectedFieldState, action: MusceGroupAffectedFieldActions) {
+    switch (action.type) {
+      case 'checkChange':
+        return action.payload
+          ? { adjustments: state.adjustments, checked: true, percentage: state.percentage || 100 }
+          : { adjustments: state.adjustments, checked: false, percentage: 0 }
+      case 'percentageChange':
+        return { ...state, percentage: action.payload }
+      default:
+        return state
+    }
+  }
+  const initialState = {
+    checked: Boolean((muscleGroupsAffected || {})[group.id]),
+    percentage: (muscleGroupsAffected || {})[group.id]?.percentage || 0,
+    adjustments: {},
+  }
+  const [state, dispatch] = useReducer(reducer, initialState)
+  const [field, meta, helpers] = useField(`muscleGroupsAffected.${group.id}`)
+  useEffect(() => {
+    helpers.setValue(state.checked ? { percentage: state.percentage, adjustments: state.adjustments } : false)
+  }, [state])
+  return (
+    <FormGroup>
+      <FormCheck
+        type="switch"
+        onChange={(e) => dispatch({ type: 'checkChange', payload: e.target.checked })}
+        checked={state.checked}
+        label={group.data().name}
+        id={`muscleGroupsAffected.${group.id}.check`}
+      />
+
+      {state.checked && (
+        <FormLabel>
+          {state.percentage}
+          <FormRange
+            value={state.percentage}
+            onChange={(e) => dispatch({ type: 'percentageChange', payload: parseFloat(e.target.value) })}
+          ></FormRange>
+        </FormLabel>
+      )}
+    </FormGroup>
+  )
+}
 function WorkoutMachineDetailsForm({
   initialData,
   save,
@@ -199,6 +272,11 @@ function WorkoutMachineDetailsForm({
   save: (values: any) => void
   cancel: () => void
 }) {
+  const [muscleGroups, muscleGroupsLoading, muscleGroupsError] = useCollection(
+    query(collections.muscleGroups, orderBy('name', 'asc')),
+    COLLECTION_CONFIG
+  )
+
   return (
     <Formik<WorkoutMachineType> initialValues={{ adjustments: [], ...initialData }} onSubmit={save}>
       {({ values }) => (
@@ -226,6 +304,12 @@ function WorkoutMachineDetailsForm({
                 {({ field }: FieldProps) => <FormControl as="textarea" placeholder="Description" rows={3} {...field} />}
               </Field>
             </FormGroup>
+          </Row>
+          <Row>Muscule groups</Row>
+          <Row>
+            {muscleGroups?.docs.map((group) => (
+              <MusceGroupAffectedField group={group} muscleGroupsAffected={values.muscleGroupsAffected} />
+            ))}
           </Row>
           <Row>
             <Col>
@@ -263,7 +347,7 @@ function AddWorkoutMachine() {
   const deleteMachine = useCallback(async (machine: DocumentWithData<WorkoutMachineType>) => {
     try {
       await deleteDoc(docs.workoutMachine(machine.id))
-      deletedMachines[machine.id] = machine.data
+      deletedMachines[machine.id] = machine.data()
       console.log('deleteMachine', machine.id, JSON.stringify(deletedMachines))
       setDeletedMachines({ ...deletedMachines })
     } catch (e) {}
@@ -271,15 +355,15 @@ function AddWorkoutMachine() {
 
   const revertDeleteMachine = useCallback(async (machine: DocumentWithData<WorkoutMachineType>) => {
     try {
-      await setDoc(docs.workoutMachine(machine.id), { ...machine.data })
+      await setDoc(docs.workoutMachine(machine.id), { ...machine.data() })
       delete deletedMachines[machine.id]
       console.log('revertDeleteMachine', machine.id, JSON.stringify(deletedMachines))
       setDeletedMachines({ ...deletedMachines })
     } catch (e) {}
   }, [])
-  const finalizeDeleteMachine = useCallback((machine: DocumentWithData<WorkoutMachineType>) => {
-    delete deletedMachines[machine.id]
-    console.log('finalizeDeleteMachine', machine.id, JSON.stringify(deletedMachines))
+  const finalizeDeleteMachine = useCallback((machineId: string) => {
+    delete deletedMachines[machineId]
+    console.log('finalizeDeleteMachine', machineId, JSON.stringify(deletedMachines))
     setDeletedMachines({ ...deletedMachines })
   }, [])
   console.log(gyms)
@@ -288,16 +372,10 @@ function AddWorkoutMachine() {
     <>
       <ToastContainer position="bottom-center" containerPosition="absolute">
         {Object.entries(deletedMachines).map(([id, data]) => (
-          <Toast
-            autohide={true}
-            delay={5000}
-            animation={true}
-            onClose={() => finalizeDeleteMachine({ id, data })}
-            key={id}
-          >
+          <Toast autohide={true} delay={5000} animation={true} onClose={() => finalizeDeleteMachine(id)} key={id}>
             <Toast.Body>
               "#{data.number} {data.name}" has been deleted{' '}
-              <Button variant="link" onClick={() => revertDeleteMachine({ id, data })}>
+              <Button variant="link" onClick={() => revertDeleteMachine({ id, data: () => data })}>
                 cancel
               </Button>
             </Toast.Body>
@@ -350,7 +428,7 @@ function AddWorkoutMachine() {
                           <Button
                             variant="danger"
                             size="sm"
-                            onClick={() => deleteMachine({ id: doc.id, data: doc.data() as WorkoutMachineType })}
+                            onClick={() => deleteMachine({ id: doc.id, data: doc.data as () => WorkoutMachineType })}
                           >
                             Delete
                           </Button>
