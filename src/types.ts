@@ -5,8 +5,9 @@ export type WorkoutType = {
   excercises: WorkoutExcercise[]
   user: string
 }
+export type PercentageMap = Record<string, Percentage>
 export type WorkoutExcercise = {
-  muscleGroups: Record<string, { percentage: number }>
+  muscleGroups: PercentageMap
   machine: string
   sets: WorkoutSetType[]
   index: number
@@ -21,9 +22,10 @@ export type WorkoutSetType = {
   start?: Date
   end?: Date
 }
-
+export type Percentage = { percentage: number }
+export type Volume = { volume: number }
+export type VolumeAndPrecentageMap = Record<string, Volume & Percentage>
 export type UserType = {
-  id: string
   name: string
   weight: number
   height: number
@@ -31,14 +33,22 @@ export type UserType = {
   adjustments: Record<string, { value: number }>
 }
 
+export type Excercise = {
+  name: string
+  description: string
+  muscleGroupsAffected: MuscleGroupsAffectedMap
+  machineIds: string[]
+}
+
 export type WorkoutMachineType = {
   name?: string
   number: number
   description?: string
-  gym: any
+  gym: string
   adjustments?: MachineAdjustmentType[]
   muscleGroupsAffected: MuscleGroupsAffectedMap
 }
+
 export type MuscleGroupsAffectedMap = Record<string, { percentage: number; adjustments: AdjustmentMap }>
 export type ScaleOrValues =
   | {
@@ -78,4 +88,7 @@ export type MuscleGroup = {
 export type DocumentWithData<T> = {
   id: string
   data: () => T
+}
+export type CollectionWithData<T> = {
+  docs?: DocumentWithData<T>[]
 }

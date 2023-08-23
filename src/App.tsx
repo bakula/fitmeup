@@ -1,6 +1,6 @@
 import './App.css'
-import { Container, Button, Form, Card, Spinner, Navbar, Offcanvas, NavDropdown, Nav } from 'react-bootstrap'
-import { Link, Route } from 'wouter'
+import { Container, Button, Form, Spinner, Navbar, Offcanvas, NavDropdown, Nav } from 'react-bootstrap'
+import { Route } from 'wouter'
 import AddWorkout from './Components/AddWorkout'
 import WorkoutHistory from './Components/WorkoutHistory'
 import Register from './Components/Register'
@@ -9,6 +9,7 @@ import { useAuthState, useSendSignInLinkToEmail } from 'react-firebase-hooks/aut
 import { auth } from './Components/Firestore'
 import { useState } from 'react'
 import AddWorkoutMachine from './Components/AddWorkoutMachine'
+import AddExcercise from './Components/AddExcercise'
 
 export const APP_PREFIX = `fit-me-up-`
 export const REGISTER_EMAIL_KEY = `${APP_PREFIX}register-email`
@@ -48,6 +49,7 @@ function App() {
                   <Nav.Link href="/history">Workout history</Nav.Link>
                   <NavDropdown title="Config" id={`config-dopdown`}>
                     <NavDropdown.Item href="/machines">Workout machines</NavDropdown.Item>
+                    <NavDropdown.Item href="/excercises">Excercises</NavDropdown.Item>
                   </NavDropdown>
                 </Nav>
               </Offcanvas.Body>
@@ -56,6 +58,7 @@ function App() {
         </Navbar>
         <Route path="/add" component={AddWorkout}></Route>
         <Route path="/machines" component={AddWorkoutMachine}></Route>
+        <Route path="/excercises" component={AddExcercise}></Route>
         <Route path="/history" component={WorkoutHistory}></Route>
       </Container>
     </>

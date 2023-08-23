@@ -1,14 +1,4 @@
-import {
-  query,
-  where,
-  setDoc,
-  doc,
-  addDoc,
-  orderBy,
-  deleteDoc,
-  QueryDocumentSnapshot,
-  DocumentData,
-} from 'firebase/firestore'
+import { query, where, setDoc, orderBy, deleteDoc, QueryDocumentSnapshot, DocumentData } from 'firebase/firestore'
 import { useCollection, useDocument } from 'react-firebase-hooks/firestore'
 import { COLLECTION_CONFIG, USE_COLLECTION, collections, docs } from './Firestore'
 import {
@@ -31,42 +21,50 @@ import {
 } from 'react-bootstrap'
 import { useSessionStorage } from 'usehooks-ts'
 import { WORKOUT_GYM_ID, WORKOUT_MACHINE_ID } from '../App'
-import { Field, Form, Formik, FormikHelpers, FieldProps, FieldArray, ArrayHelpers, useField } from 'formik'
-import { Reducer, useCallback, useEffect, useReducer, useState } from 'react'
+import { Field, Form, Formik, FieldProps, FieldArray, ArrayHelpers, useField } from 'formik'
+import { useCallback, useEffect, useReducer, useState } from 'react'
 import {
   AdjustmentElement,
   AdjustmentMap,
   AdjustmentValue,
   DocumentWithData,
-  MachineAdjustmentType,
-  MuscleGroup,
   MuscleGroupsAffectedMap,
   WorkoutMachineType,
 } from '../types'
 import { v4 as uuidv4 } from 'uuid'
 import FormRange from 'react-bootstrap/esm/FormRange'
 function EditWorkoutDetails({ id, cancel }: { id: string; cancel: () => void }) {
-  const [doc, loading, error] = useDocument(docs.workoutMachine(id))
-  const saveDoc = useCallback(async (values: any) => {
-    try {
-      await setDoc(docs.workoutMachine(id), values)
-      cancel()
-    } catch (e) {}
-  }, [])
+  const [doc] = useDocument(docs.workoutMachine(id))
+  const saveDoc = useCallback(
+    async (values: Partial<WorkoutMachineType>) => {
+      try {
+        await setDoc(docs.workoutMachine(id), values)
+        cancel()
+      } catch (e) {
+        console.log(e)
+      }
+    },
+    [cancel, id]
+  )
   return (
     doc && (
-      <WorkoutMachineDetailsForm initialData={doc?.data()!} save={saveDoc} cancel={cancel}></WorkoutMachineDetailsForm>
+      <WorkoutMachineDetailsForm initialData={doc.data()!} save={saveDoc} cancel={cancel}></WorkoutMachineDetailsForm>
     )
   )
 }
 function AddWorkoutDetails({ cancel, gymId }: { cancel: () => void; gymId: string }) {
-  const saveDoc = useCallback(async (values: any) => {
-    try {
-      const id = `${gymId}_${values.number}`
-      await setDoc(docs.workoutMachine(id), { ...values, gym: gymId })
-      cancel()
-    } catch (e) {}
-  }, [])
+  const saveDoc = useCallback(
+    async (values: Partial<WorkoutMachineType>) => {
+      try {
+        const id = `${gymId}_${values.number}`
+        await setDoc(docs.workoutMachine(id), { ...values, gym: gymId })
+        cancel()
+      } catch (e) {
+        console.log(e)
+      }
+    },
+    [cancel, gymId]
+  )
   return <WorkoutMachineDetailsForm initialData={{}} save={saveDoc} cancel={cancel}></WorkoutMachineDetailsForm>
 }
 
@@ -99,7 +97,7 @@ function ValuesConfig({ adjIndex, values }: { adjIndex: number; values: Adjustme
     <FieldArray name={`adjustments.${adjIndex}.values`}>
       {(valuesHelpers: ArrayHelpers<AdjustmentValue[]>) => (
         <>
-          {values.map((value, valueIndex) => (
+          {values.map((_value, valueIndex) => (
             <Stack direction={'horizontal'} gap={3}>
               <FormLabel>value</FormLabel>
               <Field name={`adjustments.${adjIndex}.values.${valueIndex}.kg`}>
@@ -123,7 +121,7 @@ function ElementsConfig({ adjIndex, elements }: { adjIndex: number; elements: Ad
     <FieldArray name={`adjustments.${adjIndex}.elements`}>
       {(valuesHelpers: ArrayHelpers<AdjustmentValue[]>) => (
         <>
-          {elements.map((element, elementIndex) => (
+          {elements.map((_element, elementIndex) => (
             <Stack direction={'horizontal'} gap={3}>
               <FormLabel>element name</FormLabel>
               <Field name={`adjustments.${adjIndex}.elements.${elementIndex}.name`}>
@@ -142,7 +140,7 @@ function ElementsConfig({ adjIndex, elements }: { adjIndex: number; elements: Ad
     </FieldArray>
   )
 }
-function WorkoutAdjustments({ values }: { values: WorkoutMachineType }) {
+function WorkoutAdjustments({ values }: { values: Partial<WorkoutMachineType> }) {
   return (
     <Card bg={'light'} className="m-3">
       <Card.Title>Machine adjustments</Card.Title>
@@ -212,7 +210,7 @@ type MusceGroupAffectedFieldState = {
 type MusceGroupAffectedFieldActions =
   | { type: 'checkChange'; payload: boolean }
   | { type: 'percentageChange'; payload: number }
-function MusceGroupAffectedField({
+export function MusceGroupAffectedField({
   group,
   muscleGroupsAffected,
 }: {
@@ -223,8 +221,8 @@ function MusceGroupAffectedField({
     switch (action.type) {
       case 'checkChange':
         return action.payload
-          ? { adjustments: state.adjustments, checked: true, percentage: state.percentage || 100 }
-          : { adjustments: state.adjustments, checked: false, percentage: 0 }
+          ? { ...state, checked: true, percentage: state.percentage || 100 }
+          : { ...state, checked: false, percentage: 0 }
       case 'percentageChange':
         return { ...state, percentage: action.payload }
       default:
@@ -237,30 +235,35 @@ function MusceGroupAffectedField({
     adjustments: {},
   }
   const [state, dispatch] = useReducer(reducer, initialState)
-  const [field, meta, helpers] = useField(`muscleGroupsAffected.${group.id}`)
+  const [, , helpers] = useField(`muscleGroupsAffected.${group.id}`)
   useEffect(() => {
     helpers.setValue(state.checked ? { percentage: state.percentage, adjustments: state.adjustments } : false)
-  }, [state])
+  }, [state, helpers])
   return (
-    <FormGroup>
-      <FormCheck
-        type="switch"
-        onChange={(e) => dispatch({ type: 'checkChange', payload: e.target.checked })}
-        checked={state.checked}
-        label={group.data().name}
-        id={`muscleGroupsAffected.${group.id}.check`}
-      />
-
-      {state.checked && (
-        <FormLabel>
-          {state.percentage}
-          <FormRange
-            value={state.percentage}
-            onChange={(e) => dispatch({ type: 'percentageChange', payload: parseFloat(e.target.value) })}
-          ></FormRange>
-        </FormLabel>
-      )}
-    </FormGroup>
+    <Card className={'h-100'}>
+      <Card.Body>
+        <Card.Header>
+          <FormCheck
+            type="switch"
+            onChange={(e) => dispatch({ type: 'checkChange', payload: e.target.checked })}
+            checked={state.checked}
+            id={`muscleGroupsAffected.${group.id}.check`}
+            label={group.data().name}
+          />
+        </Card.Header>
+        {state.checked && (
+          <Card.Title>
+            <Stack>
+              <Badge>{state.percentage}</Badge>
+              <FormRange
+                value={state.percentage}
+                onChange={(e) => dispatch({ type: 'percentageChange', payload: parseFloat(e.target.value) })}
+              ></FormRange>
+            </Stack>
+          </Card.Title>
+        )}
+      </Card.Body>
+    </Card>
   )
 }
 function WorkoutMachineDetailsForm({
@@ -268,17 +271,18 @@ function WorkoutMachineDetailsForm({
   save,
   cancel,
 }: {
-  initialData: any
-  save: (values: any) => void
+  initialData: Partial<WorkoutMachineType>
+  save: (values: Partial<WorkoutMachineType>) => void
   cancel: () => void
 }) {
   const [muscleGroups, muscleGroupsLoading, muscleGroupsError] = useCollection(
     query(collections.muscleGroups, orderBy('name', 'asc')),
     COLLECTION_CONFIG
   )
+  console.log(muscleGroupsLoading, muscleGroupsError)
 
   return (
-    <Formik<WorkoutMachineType> initialValues={{ adjustments: [], ...initialData }} onSubmit={save}>
+    <Formik<Partial<WorkoutMachineType>> initialValues={{ adjustments: [], ...initialData }} onSubmit={save}>
       {({ values }) => (
         <Form>
           <Row>
@@ -305,10 +309,13 @@ function WorkoutMachineDetailsForm({
               </Field>
             </FormGroup>
           </Row>
-          <Row>Muscule groups</Row>
+
           <Row>
+            <Col lg={12}>Muscule groups</Col>
             {muscleGroups?.docs.map((group) => (
-              <MusceGroupAffectedField group={group} muscleGroupsAffected={values.muscleGroupsAffected} />
+              <Col lg={4}>
+                <MusceGroupAffectedField group={group} muscleGroupsAffected={values.muscleGroupsAffected} />
+              </Col>
             ))}
           </Row>
           <Row>
@@ -344,28 +351,41 @@ function AddWorkoutMachine() {
     COLLECTION_CONFIG
   )
 
-  const deleteMachine = useCallback(async (machine: DocumentWithData<WorkoutMachineType>) => {
-    try {
-      await deleteDoc(docs.workoutMachine(machine.id))
-      deletedMachines[machine.id] = machine.data()
-      console.log('deleteMachine', machine.id, JSON.stringify(deletedMachines))
-      setDeletedMachines({ ...deletedMachines })
-    } catch (e) {}
-  }, [])
+  const deleteMachine = useCallback(
+    async (machine: DocumentWithData<WorkoutMachineType>) => {
+      try {
+        await deleteDoc(docs.workoutMachine(machine.id))
+        deletedMachines[machine.id] = machine.data()
+        console.log('deleteMachine', machine.id, JSON.stringify(deletedMachines))
+        setDeletedMachines({ ...deletedMachines })
+      } catch (e) {
+        console.log(e)
+      }
+    },
+    [deletedMachines]
+  )
 
-  const revertDeleteMachine = useCallback(async (machine: DocumentWithData<WorkoutMachineType>) => {
-    try {
-      await setDoc(docs.workoutMachine(machine.id), { ...machine.data() })
-      delete deletedMachines[machine.id]
-      console.log('revertDeleteMachine', machine.id, JSON.stringify(deletedMachines))
+  const revertDeleteMachine = useCallback(
+    async (machine: DocumentWithData<WorkoutMachineType>) => {
+      try {
+        await setDoc(docs.workoutMachine(machine.id), { ...machine.data() })
+        delete deletedMachines[machine.id]
+        console.log('revertDeleteMachine', machine.id, JSON.stringify(deletedMachines))
+        setDeletedMachines({ ...deletedMachines })
+      } catch (e) {
+        console.log(e)
+      }
+    },
+    [deletedMachines]
+  )
+  const finalizeDeleteMachine = useCallback(
+    (machineId: string) => {
+      delete deletedMachines[machineId]
+      console.log('finalizeDeleteMachine', machineId, JSON.stringify(deletedMachines))
       setDeletedMachines({ ...deletedMachines })
-    } catch (e) {}
-  }, [])
-  const finalizeDeleteMachine = useCallback((machineId: string) => {
-    delete deletedMachines[machineId]
-    console.log('finalizeDeleteMachine', machineId, JSON.stringify(deletedMachines))
-    setDeletedMachines({ ...deletedMachines })
-  }, [])
+    },
+    [deletedMachines]
+  )
   console.log(gyms)
   console.log(gymId, workoutMachines)
   return (
@@ -439,7 +459,7 @@ function AddWorkoutMachine() {
                 )}
               </tbody>
             </Table>
-            {!machineId && add ? (
+            {!machineId && gymId && add ? (
               <>
                 <h1>Add new machine</h1>
                 <AddWorkoutDetails cancel={() => setAdd(false)} gymId={gymId} />

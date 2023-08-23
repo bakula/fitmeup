@@ -1,5 +1,15 @@
 import { initializeApp } from '@firebase/app'
-import { getFirestore, collection, doc, query, where, DocumentData } from 'firebase/firestore'
+import {
+  getFirestore,
+  collection,
+  doc,
+  query,
+  where,
+  DocumentData,
+  Query,
+  QueryFieldFilterConstraint,
+  QueryOrderByConstraint,
+} from 'firebase/firestore'
 import { getAuth } from 'firebase/auth'
 
 export enum USE_COLLECTION {
@@ -23,8 +33,9 @@ export const COLLECTION_CONFIG = {
 
 const firebaseApp = initializeApp(firebaseConfig)
 export const auth = getAuth(firebaseApp)
-export const firesoreDb = getFirestore(firebaseApp)
+export const firestoreDb = getFirestore(firebaseApp)
 const dataBases = {
+  exercises: 'exercises',
   gyms: 'gyms',
   muscleGroups: 'muscleGroups',
   workoutMachines: 'workoutMachines',
@@ -33,20 +44,25 @@ const dataBases = {
 } as const
 
 export const collections = {
-  gyms: collection(firesoreDb, dataBases.gyms),
-  muscleGroups: collection(firesoreDb, dataBases.muscleGroups),
-  workoutMachines: collection(firesoreDb, dataBases.workoutMachines),
-  workouts: collection(firesoreDb, dataBases.workouts),
-  users: collection(firesoreDb, dataBases.users),
+  exercises: collection(firestoreDb, dataBases.exercises),
+  gyms: collection(firestoreDb, dataBases.gyms),
+  muscleGroups: collection(firestoreDb, dataBases.muscleGroups),
+  workoutMachines: collection(firestoreDb, dataBases.workoutMachines),
+  workouts: collection(firestoreDb, dataBases.workouts),
+  users: collection(firestoreDb, dataBases.users),
 } as const
 
 export const docs = {
-  user: (id: string) => doc(firesoreDb, dataBases.users, id),
-  workout: (id: string) => doc(firesoreDb, dataBases.workouts, id),
-  workoutMachine: (id: string) => doc(firesoreDb, dataBases.workoutMachines, id),
+  exercise: (id: string) => doc(firestoreDb, dataBases.exercises, id),
+  user: (id: string) => doc(firestoreDb, dataBases.users, id),
+  workout: (id: string) => doc(firestoreDb, dataBases.workouts, id),
+  workoutMachine: (id: string) => doc(firestoreDb, dataBases.workoutMachines, id),
 }
 
-export const queryCurrentUser = (collection: any, ...aditionalRules: any) => {
+export const queryCurrentUser = (
+  collection: Query<DocumentData, DocumentData>,
+  ...aditionalRules: (QueryFieldFilterConstraint | QueryOrderByConstraint)[]
+) => {
   const rules = [where('ownerId', '==', auth.currentUser?.uid), ...aditionalRules]
   return query<DocumentData, DocumentData>(collection, ...rules)
 }
