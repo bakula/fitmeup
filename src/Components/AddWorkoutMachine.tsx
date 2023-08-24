@@ -18,6 +18,7 @@ import {
   Container,
   ToastContainer,
   Toast,
+  ButtonGroup,
 } from 'react-bootstrap'
 import { useSessionStorage } from 'usehooks-ts'
 import { WORKOUT_GYM_ID, WORKOUT_MACHINE_ID } from '../App'
@@ -33,6 +34,7 @@ import {
 } from '../types'
 import { v4 as uuidv4 } from 'uuid'
 import FormRange from 'react-bootstrap/esm/FormRange'
+import { type } from 'os'
 function EditWorkoutDetails({ id, cancel }: { id: string; cancel: () => void }) {
   const [doc] = useDocument(docs.workoutMachine(id))
   const saveDoc = useCallback(
@@ -205,7 +207,6 @@ function WorkoutAdjustments({ values }: { values: Partial<WorkoutMachineType> })
 type MusceGroupAffectedFieldState = {
   checked: boolean
   percentage: number
-  adjustments: AdjustmentMap
 }
 type MusceGroupAffectedFieldActions =
   | { type: 'checkChange'; payload: boolean }
@@ -221,10 +222,10 @@ export function MusceGroupAffectedField({
     switch (action.type) {
       case 'checkChange':
         return action.payload
-          ? { ...state, checked: true, percentage: state.percentage || 100 }
-          : { ...state, checked: false, percentage: 0 }
+          ? { checked: true, percentage: state.percentage || 100 }
+          : { checked: false, percentage: 0 }
       case 'percentageChange':
-        return { ...state, percentage: action.payload }
+        return { checked: state.checked, percentage: action.payload }
       default:
         return state
     }
@@ -232,12 +233,11 @@ export function MusceGroupAffectedField({
   const initialState = {
     checked: Boolean((muscleGroupsAffected || {})[group.id]),
     percentage: (muscleGroupsAffected || {})[group.id]?.percentage || 0,
-    adjustments: {},
   }
   const [state, dispatch] = useReducer(reducer, initialState)
   const [, , helpers] = useField(`muscleGroupsAffected.${group.id}`)
   useEffect(() => {
-    helpers.setValue(state.checked ? { percentage: state.percentage, adjustments: state.adjustments } : false)
+    helpers.setValue(state.checked ? { percentage: state.percentage } : false)
   }, [state, helpers])
   return (
     <Card className={'h-100'}>
@@ -259,6 +259,17 @@ export function MusceGroupAffectedField({
                 value={state.percentage}
                 onChange={(e) => dispatch({ type: 'percentageChange', payload: parseFloat(e.target.value) })}
               ></FormRange>
+              <ButtonGroup>
+                {[10, 20, 50, 80, 100].map((value) => (
+                  <Button
+                    size="sm"
+                    style={{ opacity: value * 0.01 }}
+                    onClick={() => dispatch({ type: 'percentageChange', payload: value })}
+                  >
+                    {value}%
+                  </Button>
+                ))}
+              </ButtonGroup>
             </Stack>
           </Card.Title>
         )}
