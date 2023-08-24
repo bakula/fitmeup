@@ -1,0 +1,4 @@
+# Ignore artifacts:
+dist
+.firebase
+node-modules
