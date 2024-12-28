@@ -26,7 +26,6 @@ import { Field, Form, Formik, FieldProps, FieldArray, ArrayHelpers, useField } f
 import { useCallback, useEffect, useReducer, useState } from 'react'
 import {
   AdjustmentElement,
-  AdjustmentMap,
   AdjustmentValue,
   DocumentWithData,
   MuscleGroupsAffectedMap,
@@ -34,7 +33,6 @@ import {
 } from '../types'
 import { v4 as uuidv4 } from 'uuid'
 import FormRange from 'react-bootstrap/esm/FormRange'
-import { type } from 'os'
 function EditWorkoutDetails({ id, cancel }: { id: string; cancel: () => void }) {
   const [doc] = useDocument(docs.workoutMachine(id))
   const saveDoc = useCallback(

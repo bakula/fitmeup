@@ -122,7 +122,7 @@ function ExcerciseDetailsForm({
           </Row>
           <Row>
             <Col lg={12}>Machines</Col>
-            {workoutMachines?.docs.map((machine, index) => (
+            {workoutMachines?.docs.map((machine) => (
               <Col lg={4}>
                 {' '}
                 <FormGroup>

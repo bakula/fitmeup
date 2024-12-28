@@ -3,10 +3,7 @@ import Button from 'react-bootstrap/Button'
 import {
   CollectionWithData,
   DocumentWithData,
-  Excercise,
-  Percentage,
   PercentageMap,
-  Volume,
   VolumeAndPrecentageMap,
   WorkoutExcercise,
   WorkoutMachineType,
@@ -14,10 +11,10 @@ import {
   WorkoutType,
 } from '../types'
 import { WORKOUT_USER_ID, WORKOUT_GYM_ID } from '../App'
-import { doc, query, where, setDoc, orderBy, getDocs } from 'firebase/firestore'
+import { query, where, setDoc, orderBy, getDocs } from 'firebase/firestore'
 import { useCollection, useDocument } from 'react-firebase-hooks/firestore'
-import { Formik, Form, Field, FieldProps, FieldArray, ArrayHelpers, FormikHelpers } from 'formik'
-import { COLLECTION_CONFIG, auth, collections, docs, firestoreDb, queryCurrentUser } from './Firestore'
+import { Formik, Form, Field, FieldProps, FieldArray, ArrayHelpers } from 'formik'
+import { COLLECTION_CONFIG, auth, collections, docs, queryCurrentUser } from './Firestore'
 import {
   Badge,
   Card,
@@ -210,7 +207,7 @@ function AddWorkout() {
   console.log('workout', workout, workoutLoading, workoutError)
   console.log('workouts', workouts?.docs, workoutsLoading, workoutsError)
 
-  const addNewWorkout: () => void = async () => {
+/*  const addNewWorkout: () => void = async () => {
     const ownerId = auth?.currentUser?.uid
     if (ownerId) {
       const workout: WorkoutType = {
@@ -229,6 +226,7 @@ function AddWorkout() {
       }
     }
   }
+    */
   const [selectedWorout, setSelectedWorkout] = useState<DocumentWithData<WorkoutType>>()
 
   return (
@@ -303,7 +301,7 @@ type ExcerciseCardProp = {
   excercisesHelpers: ArrayHelpers<WorkoutExcercise[]>
 }
 function ExcerciseCard({ excercise, excerciseIndex, values, workoutMachines, excercisesHelpers }: ExcerciseCardProp) {
-  const [formView, setFormView] = useState(false)
+  const [formView] = useState(false)
   return formView ? (
     <Col xl={4} sm={6}>
       <Card>
@@ -361,7 +359,7 @@ function ExcerciseCard({ excercise, excerciseIndex, values, workoutMachines, exc
               const template = prepareVolumeTemplate(meta.value.muscleGroups)
               return (
                 <>
-                  {meta.value.sets.map((set, setIndex) => (
+                  {meta.value.sets.map((set) => (
                     <SetValueView kg={set.kilograms} reps={set.reps} volume={calculateSetVolume(set, template)} />
                   ))}
                 </>
@@ -411,9 +409,9 @@ export type WorkoutFormProps = {
 
 function WorkoutForm({ initialValues, gymId, setGymId, setUserId }: WorkoutFormProps) {
   const [users] = useCollection(queryCurrentUser(collections.users), COLLECTION_CONFIG)
-  const [gyms, , gymsError] = useCollection(collections.gyms)
+  const [gyms] = useCollection(collections.gyms)
   const [muscleGroups] = useCollection(query(collections.muscleGroups, orderBy('name', 'asc')), COLLECTION_CONFIG)
-  const [workoutMachines, , workoutMachinesError] = useCollection(
+  const [workoutMachines] = useCollection(
     query(collections.workoutMachines, orderBy('number', 'asc'), where('gym', '==', gymId)),
     COLLECTION_CONFIG
   )
