@@ -46,6 +46,7 @@ function App() {
                 <Nav className="justify-content-end flex-grow-1 pe-3">
                   <Nav.Link href="/">Home</Nav.Link>
                   <Nav.Link href="/add">Add workout</Nav.Link>
+                  <Nav.Link href="/add2">Add workout 2</Nav.Link>
                   <Nav.Link href="/history">Workout history</Nav.Link>
                   <NavDropdown title="Config" id={`config-dopdown`}>
                     <NavDropdown.Item href="/machines">Workout machines</NavDropdown.Item>
