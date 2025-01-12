@@ -1,7 +1,10 @@
 import './App.css'
+import 'primeicons/primeicons.css';
+import 'primereact/resources/themes/bootstrap4-light-blue/theme.css'
 import { Container, Button, Form, Spinner, Navbar, Offcanvas, NavDropdown, Nav } from 'react-bootstrap'
 import { Route } from 'wouter'
 import AddWorkout from './Components/AddWorkout'
+import AddWorkout2 from './Components/AddWorkout2'
 import WorkoutHistory from './Components/WorkoutHistory'
 import Register from './Components/Register'
 import Alert from 'react-bootstrap/Alert'
@@ -10,6 +13,7 @@ import { auth } from './Components/Firestore'
 import { useState } from 'react'
 import AddWorkoutMachine from './Components/AddWorkoutMachine'
 import AddExcercise from './Components/AddExcercise'
+import { PrimeReactProvider } from 'primereact/api';
 
 export const APP_PREFIX = `fit-me-up-`
 export const REGISTER_EMAIL_KEY = `${APP_PREFIX}register-email`
@@ -21,12 +25,11 @@ function App() {
 
   const [sendSignInLinkToEmail, sending, sendingError] = useSendSignInLinkToEmail(auth)
   const [email, setEmail] = useState(localStorage.getItem(REGISTER_EMAIL_KEY) || '')
-  const url =
-    import.meta.env.MODE === 'development' ? 'http://localhost:5173/register' : 'https://fitmeup-f489e.web.app/register'
+  const url = 'https://psychic-rotary-phone-r7pqrrpr4p3wwqg-5173.app.github.dev/register'//import.meta.env.MODE === 'development' ? 'http://localhost:5173/register' : 'https://fitmeup-f489e.web.app/register'
   console.log(user)
   const expand = 'sm'
   return !loading && !error && user ? (
-    <>
+    <PrimeReactProvider>
       <Route path="/register" component={Register}></Route>
 
       <Container fluid>
@@ -58,11 +61,12 @@ function App() {
           </Container>
         </Navbar>
         <Route path="/add" component={AddWorkout}></Route>
+        <Route path="/add2" component={AddWorkout2}></Route>
         <Route path="/machines" component={AddWorkoutMachine}></Route>
         <Route path="/excercises" component={AddExcercise}></Route>
         <Route path="/history" component={WorkoutHistory}></Route>
       </Container>
-    </>
+      </PrimeReactProvider>
   ) : (
     <>
       <Route path="/register" component={Register}></Route>
