@@ -1,4 +1,5 @@
 import './App.css'
+import 'primeicons/primeicons.css';
 import 'primereact/resources/themes/bootstrap4-light-blue/theme.css'
 import { Container, Button, Form, Spinner, Navbar, Offcanvas, NavDropdown, Nav } from 'react-bootstrap'
 import { Route } from 'wouter'

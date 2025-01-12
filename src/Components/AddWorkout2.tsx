@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
 import { InputNumber } from 'primereact/inputnumber';
+import {SeriesModeIcon} from './SeriesModeIcon'
 export type Series = {
     mode:"initial"|"workout",
     repeats:number,
@@ -10,27 +11,28 @@ export type Series = {
     },
 
 }
+//todo: use import { useLocalStorage } from 'primereact/hooks';
 function getFromStorage<T> (key:string, defaultValue:T):T{
     const value = localStorage.getItem(key)
     return value ? JSON.parse(value):defaultValue
 }
 function AddWorkout2(){
-    const [series, setSeries] = useState<Series[]>(()=>getFromStorage<Series[]>("series", []))
+    const [series, setSeries] = useState<Series[]>(()=>getFromStorage<Series[]>("series", [{mode:"initial", repeats:1,  weight:{mode:"symetric", "unit":"kg", "value":10}},{mode:"workout", repeats:1,  weight:{mode:"symetric", "unit":"kg", "value":10}}]))
     const addSeries = useCallback(()=>{
-        setSeries([...series, {mode:"initial", repeats:1,  weight:{mode:"symetric", "unit":"kg", "value":10}}])
+        setSeries([...series, {mode:"workout", repeats:1,  weight:{mode:"symetric", "unit":"kg", "value":10}}])
     }, [series])
-    return <div>
+    return <div className="addWorkout">
         <h1>Series <small><button className="btn btn-primary" onClick={addSeries}>+</button></small></h1>
         <table>
             <tbody>
                 {series?.map((theSeries, index)=><tr key={index}>
-                    <td>{theSeries.mode}</td>
-                    <td><InputNumber value={theSeries.repeats} showButtons buttonLayout="horizontal" step={0.25}
+                    <td><SeriesModeIcon mode={theSeries.mode} /></td>
+                    <td><InputNumber value={theSeries.repeats} showButtons buttonLayout="horizontal" step={1}
             decrementButtonClassName="p-button-danger" incrementButtonClassName="p-button-success" incrementButtonIcon="pi pi-plus" decrementButtonIcon="pi pi-minus"
-            mode="currency" currency="EUR" />{theSeries.repeats}</td>
+            mode="decimal" size={3} suffix={" reps"} />{theSeries.repeats}</td>
                     </tr>)}
             </tbody>
         </table>
     </div>
 }
-export default AddWorkout2;
+export default AddWorkout2; 
